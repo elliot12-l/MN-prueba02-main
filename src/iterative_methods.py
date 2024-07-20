@@ -60,20 +60,23 @@ def gauss_jacobi(
     # --- Algoritmo ---
     n = A.shape[0]
     x = x0.copy()
-    logging.info(f"i= {0} x: {x.T}")
+    trayectoria = [x.copy()]
+
     for k in range(1, max_iter):
-        x_new = np.zeros((n, 1))  # prealloc
+        x_new = np.zeros((n,))
         for i in range(n):
             suma = sum([A[i, j] * x[j] for j in range(n) if j != i])
             x_new[i] = (b[i] - suma) / A[i, i]
 
-        if np.linalg.norm(x_new - x) < tol:
-            return x_new
+        trayectoria.append(x_new.copy())
 
+        if np.linalg.norm(x_new - x) < tol:
+            return x_new, np.array(trayectoria)
+        
         x = x_new.copy()
         logging.info(f"i= {k} x: {x.T}")
 
-    return x
+    return x, np.array(trayectoria)
 
 
 # ####################################################################
@@ -110,20 +113,20 @@ def gauss_seidel(
     # --- Algoritmo ---
     n = A.shape[0]
     x = x0.copy()
+    trayectoria = [x.copy()]
 
-    logging.info(f"i= {0} x: {x.T}")
     for k in range(1, max_iter):
-        x_new = np.zeros((n, 1))  # prealloc
+        x_new = np.zeros((n,))
         for i in range(n):
-            suma = sum([A[i, j] * x_new[j] for j in range(i) if j != i]) + sum(
-                [A[i, j] * x[j] for j in range(i, n) if j != i]
-            )
+            suma = sum([A[i, j] * x_new[j] for j in range(i)]) + sum([A[i, j] * x[j] for j in range(i+1, n)])
             x_new[i] = (b[i] - suma) / A[i, i]
 
+        trayectoria.append(x_new.copy())
+
         if np.linalg.norm(x_new - x) < tol:
-            return x_new
+            return x_new, np.array(trayectoria)
 
         x = x_new.copy()
         logging.info(f"i= {k} x: {x.T}")
 
-    return x
+    return x, np.array(trayectoria)
